@@ -35,7 +35,7 @@ def load_data():
 
     # IDWR速報データ
     response = requests.get(url)
-    soup = BeautifulSoup(response.text, 'lxml')
+    soup = BeautifulSoup(response.text, 'html.parser')
 
     # csvファイルのリンク: 疾病毎定点当たり報告数　～過去10年間との比較～
     elem = soup.find(href=re.compile("trend.csv"))
