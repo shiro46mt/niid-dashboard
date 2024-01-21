@@ -7,6 +7,9 @@ from bs4 import BeautifulSoup
 import numpy as np
 import pandas as pd
 import streamlit as st
+import plotly.express as px
+import plotly.graph_objects as go
+
 
 deseases = [
     'インフルエンザ','COVID-19','咽頭結膜熱','Ａ群溶血性レンサ球菌咽頭炎','感染性胃腸炎',
@@ -72,7 +75,20 @@ def load_data():
 dfs = load_data()
 df = dfs[desease]
 
-color = ["#4E79A7CC","#F28E2BCC","#E15759CC","#76B7B2CC","#59A14FCC","#EDC948CC","#B07AA1CC","#FF9DA7CC","#9C755FCC","#BAB0ACCC", "#222f"]
-st.line_chart(df, color=color)
+# Plotly
+colors = px.colors.qualitative.Plotly
+x = pd.date_range(start = '2020-1-1', end = '2020-12-31', freq = '7d')
+fig = go.Figure()
+# past 10 years
+for c, color in zip(df.columns[:-1], colors):
+    fig.add_trace(go.Scatter(x=x, y=df[c], mode='lines', name=c, line=dict(color=color)))
+# this year
+c = df.columns[-1]
+color = '#444'
+fig.add_trace(go.Scatter(x=x, y=df[c], mode='lines+markers', name=c, line=dict(color=color), marker=dict(color=color)))
+# setting
+fig.update_layout(xaxis=dict(tickformat="%b %d"), title=desease)
+
+st.plotly_chart(fig, use_container_width=True)
 
 st.text("出典: https://www.niid.go.jp/niid/ja/data.html")
