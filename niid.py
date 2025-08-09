@@ -56,7 +56,7 @@ def get_data():
             continue
         # データ行 -> 追加
         elif row[0] != '':
-            data[_desease].append([_desease] + row)
+            data[_desease].append(row)
 
     # 疾患別にDataFrameに格納
     cols = ['年'] + list(range(1, 54))
