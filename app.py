@@ -10,6 +10,8 @@ import streamlit as st
 import plotly.express as px
 import plotly.graph_objects as go
 
+import niid
+
 
 deseases = [
     'インフルエンザ','COVID-19','咽頭結膜熱','Ａ群溶血性レンサ球菌咽頭炎','感染性胃腸炎',
@@ -33,44 +35,9 @@ desease = st.selectbox('疾患:', deseases)
 
 @st.cache_data
 def load_data():
-    base_url = "https://www.niid.go.jp"
-    url = base_url + "/niid/ja/data.html"
+    df = niid.get_data()
 
-    # IDWR速報データ
-    response = requests.get(url)
-    soup = BeautifulSoup(response.text, 'html.parser')
-
-    # csvファイルのリンク: 疾病毎定点当たり報告数　～過去10年間との比較～
-    elem = soup.find(href=re.compile("trend.csv"))
-
-    response = requests.get(base_url + elem.attrs['href'])
-    response.encoding = 'shift-jis'
-    reader = csv.reader(StringIO(response.text))
-
-    # csvファイルの読み込み
-    data = {}
-    _desease = ''
-    for row in reader:
-        # 疾患名の行 -> 初期化
-        if row[0] in deseases:
-            _desease = row[0]
-            data[_desease] = []
-        # ヘッダー行 -> スキップ
-        elif _desease == '':
-            continue
-        # データ行 -> 追加
-        elif row[0] != '':
-            data[_desease].append(row)
-
-    # 疾患別にDataFrameに格納
-    cols = ['年'] + list(range(1, 54))
-    dfs = {}
-    for desease in deseases:
-        df = pd.DataFrame(data[desease], columns=cols)
-        df['年'] = df['年'].apply(lambda x: '20' + x)
-        dfs[desease] = df.set_index('年').T.replace(['', '-'], np.nan).astype(float)
-
-    return dfs
+    return df
 
 dfs = load_data()
 df = dfs[desease]
